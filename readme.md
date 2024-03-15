@@ -77,6 +77,8 @@ gensokyo兼容 [OneBot-v11](https://github.com/botuniverse/onebot-11) ，并在�
 
 Trss项目请配置array=true
 
+测试所用服务器位于新加坡,尚未测试telegram服务器到国内服务器的连通性,若遇到问题可以进群咨询或欢迎提出issue~
+
 下方的需配置 均为config.yml的配置项,配置项右侧有注释解释和格式例子
 
 - [x] 纯http轮询 getmsg获取信息
