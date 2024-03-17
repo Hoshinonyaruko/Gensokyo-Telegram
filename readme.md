@@ -8,7 +8,7 @@
 
 # gensokyo
 
-_✨ 基于 [OneBot](https://github.com/howmanybots/onebot/blob/master/README.md) Telegram机器人Onebot v11 Golang 原生实现 ✨_  
+_✨ 基于 [OneBot](https://github.com/botuniverse/onebot-11/blob/master/README.md) Telegram 机器人 OneBot v11 Golang 原生实现 ✨_  
 
 
 </div>
@@ -32,7 +32,7 @@ _✨ 基于 [OneBot](https://github.com/howmanybots/onebot/blob/master/README.md
 </p>
 
 <p align="center">
-  <a href="https://github.com/howmanybots/onebot/blob/master/README.md">文档</a>
+  <a href="https://github.com/botuniverse/onebot-11/blob/master/README.md">文档</a>
   ·
   <a href="https://github.com/hoshinonyaruko/gensokyo-telegram/releases">下载</a>
   ·
@@ -41,81 +41,116 @@ _✨ 基于 [OneBot](https://github.com/howmanybots/onebot/blob/master/README.md
   <a href="https://github.com/hoshinonyaruko/gensokyo-telegram/blob/master/CONTRIBUTING.md">参与贡献</a>
 </p>
 <p align="center">
-  <a href="https://gensokyo.bot">项目主页:gensokyo.bot</a>
+  <a href="https://gensokyo.bot">项目主页: gensokyo.bot</a>
 </p>
 
 ## 底层
-- [`go-telegram-bot-api`](https://github.com/go-telegram-bot-api/telegram-bot-api): 本项目底层基于有9年历史的telegram 老牌 Go sdk 稳定可靠.
+
+- [`go-telegram-bot-api`](https://github.com/go-telegram-bot-api/telegram-bot-api): 本项目基于有 9 年历史的 telegram 老牌 Go SDK, 稳定可靠.
 
 ## 兼容性
-gensokyo兼容 [OneBot-v11](https://github.com/botuniverse/onebot-11) ，并在其基础上做了一些扩展，详情请看 OneBot 的文档。
 
-可以多种方式连接tg并提供onebotv11反向ws标准api,
+gensokyo 兼容 [OneBot 11](https://github.com/botuniverse/onebot-11) 标准, 并在其基础上做了一些扩展, 详见 OneBot 文档.
 
-支持以下连接方式:
+可以多种方式连接 Telegram 并提供 OneBot 11 标准的反向接口
 
-- [x] 纯http轮询 getmsg获取信息
-- [x] 自备域名,自备ssl证书,webhook连接tg
-- [x] 自备域名,框架生成自签名ssl证书,webhook连接tg
-- [x] ngrok临时免费域名,ngrok提供证书,webhook连接tg
+支持使用以下方式连接到 Telegram:
 
-支持连接koishi,nonebot2,trss,zerobot,MiraiCQ,hoshino..
+- [x] 纯 HTTP 轮询, 使用 `getmsg` 获取信息
+- [x] 自备域名和 SSL 证书, 使用 webhook 连接 Telegram
+- [x] 自备域名, 框架生成自签名 SSL 证书, 使用 webhook 连接 Telegram
+- [x] 使用 ngrok 提供的临时免费域名和供证书, 通过 webhook 连接 Telegram
 
-支持连接tata,派蒙,炸毛,早苗,yobot...
+支持连接 koishi, nonebot2, trss, zerobot, MiraiCQ, hoshino 等框架
 
-支持连接Mirai(Overflow)...
+支持连接 tata, 派蒙, 炸毛, 早苗, yobot 等机器人
 
-可以与支持onebotV11适配器的项目相连接使用.
+支持连接 Mirai(Overflow)
 
-实现插件开发和用户开发者无需重新开发,复用过往生态的插件和使用体验.
+可以与支持 OneBot 11 标准的项目相连接使用.
 
-持续完善中.....交流群:196173384
+让开发者无需重新开发, 直接复用过往生态的插件和使用体验.
 
-欢迎测试,询问任何有关使用的问题,有问必答,有难必帮~
+持续完善中.....交流群: `196173384`
+
+欢迎测试或询问任何有关使用的问题, 有问必答, 有难必帮~
 
 ## 配置指南
 
-Trss项目请配置array=true
+> [!TIP]
+> Trss 项目请在配置中将 `array` 设为 `true`
 
-测试所用服务器位于新加坡,尚未测试telegram服务器到国内服务器的连通性,若遇到问题可以进群咨询或欢迎提出issue~
+> [!WARNING]
+> 尚未测试 Telegram 服务器到国内服务器的连通性, 若遇到问题可以进群咨询或欢迎提出 Issue~
 
-下方的需配置 均为config.yml的配置项,配置项右侧有注释解释和格式例子
+下方的需配置内容均为 `config.yml` 的配置项且均位于 `settings` 下. `config.yml` 会在第一次启动后生成.
 
-- [x] 纯http轮询 getmsg获取信息
+关于各配置项的具体信息请参考 `config.yml` 右侧的说明
 
-需配置 botToken httpGetMsg=true getMsgTimeOut(秒)
+### 纯 HTTP 轮询, 使用 `getmsg` 获取信息
 
-- [x] 自备域名,自备ssl证书,webhook连接tg
+需配置:
 
-需配置 botToken webHookPath server_dir(如果你的域名是baidu.com,那么server_dir就是baidu.com,不带协议头) port=443 crt key 为\双写的证书路径
+- `botToken`
+- `httpGetMsg`: 设为 `true`
+- `getMsgTimeOut`: 单位为秒
 
-- [x] 自备域名,框架生成自签名ssl证书,webhook连接tg
+### 自备域名和 SSL 证书, 使用 webhook 连接 Telegram
 
-需配置 botToken webHookPath server_dir(如果你的域名是baidu.com,那么server_dir就是baidu.com,不带协议头) port=443 customcert=true
+需配置:
 
-- [x] ngrok临时免费域名,ngrok提供证书,webhook连接tg
+- `botToken`
+- `webHookPath`
+- `server_dir`: 如果你的域名是 `baidu.com`, 那么 `server_dir` 就是 `baidu.com`, 不带协议头
+- `port`: 设为 `443`
+- `crt`: 路径中的 `\` 需要写成 `\\`
+- `key`
 
-需配置 botToken useNgrok=true ngrokKey port=任意非443 8443端口!
+### 自备域名, 框架生成自签名 SSL 证书, 使用 webhook 连接 Telegram
 
-## 发送速度慢怎么办
+需配置:
 
-以下两个参数可能会决定回复速度,可根据自身测试结果进行调节
+- `botToken`
+- `webHookPath`
+- `server_dir`: 如果你的域名是 `baidu.com`, 那么 `server_dir` 就是 `baidu.com`, 不带协议头
+- `port`: 设为 `443`
+- `customcert`: 设为 `true`
 
+### 使用 ngrok 提供的临时免费域名和供证书, 通过 webhook 连接 Telegram
+
+需配置:
+
+- `botToken`
+- `useNgrok`: 设为 `true`
+- `ngrokKey`
+- `port`: 设为 **任意非 `443` 或 `8443` 端口**
+
+## 提升消息发送速度
+
+以下两个配置可能会该表回复速度, 可根据自身实际测试结果进行调节
+
+> [!IMPORTANT]
+> 以下两个配置项修改后在不同的服务器条件下可能会有不同的表现, 请自行感受运行速度并决定是否开启
+
+```yaml
 highway : true
+```
 
-将图片url直接上传到telegram 服务器带宽低情况比发图片url更快 请自行感受速度决定是否开启
+将图片 URL 直接上传到 Telegram, 服务器带宽低情况比发图片 URL 更快
 
+```yaml
 sendDirectResponse : false
+```
 
-是否在webhook返回时直接发送信息(在不同服务器条件,速度或更快或更慢都有可能) 请自行感受速度决定是否开启
+是否在 webhook 返回时直接发送信息
 
 ## 特别鸣谢
 
-- [`mnixry/nonebot-plugin-gocqhttp`](https://github.com/mnixry/nonebot-plugin-gocqhttp/): 本项目采用了mnixry编写的前端,并实现了与它对应的,基于Telegram后端api.
+- [`mnixry/nonebot-plugin-gocqhttp`](https://github.com/mnixry/nonebot-plugin-gocqhttp/): 本项目采用了 mnixry 编写的前端, 并实现了与它对应的基于 Telegram 的后端 API.
 
 ### 接口
 
-由于本项目是由gensokyo-qqapi转换迁移而来，目前已经支持nb2\yunzai\早苗\koishi等框架的图文收发，暂时仅支持反向ws方式连接Onebotv11机器人应用.
+由于本项目是由 `gensokyo-qqapi` 转换而来, 目前已经支持 nonebot2/yunzai/早苗/koishi 等框架的图文收发, 暂时仅支持反向 WebSocket 方式连接 OneBot 11 应用端.
 
 - [] HTTP API
 - [] 反向 HTTP POST
@@ -126,8 +161,8 @@ sendDirectResponse : false
 
 > 拓展 API 可前往 [文档](docs/cqhttp.md) 查看
 
-- [x] 连接多个ws地址
-- [x] 将Telegram用户信息虚拟成群事件/私聊事件
+- [x] 连接多个 WebSocket 地址
+- [x] 将 Telegram 用户信息虚拟成群事件 / 私聊事件
 - [x] 持续更新~
 
 
@@ -228,7 +263,7 @@ todo,正在施工中
 <details>
 <summary>已实现 Event</summary>
 
-#### 符合 OneBot 标准的 Event（部分 Event 比 OneBot 标准多上报几个字段，不影响使用）
+#### 符合 OneBot 标准的 Event（部分 Event 比 OneBot 标准多上报几个字段, 不影响使用）
 
 | 事件类型 | Event            |
 | -------- | ---------------- |
@@ -270,9 +305,9 @@ todo,正在施工中
 - 提问找不到重点
 - 重复提问
 
-> 请注意, 开发者并没有义务回复您的问题. 您应该具备基本的提问技巧。  
-> 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
+> 请注意, 开发者并没有义务回复您的问题. 您应该具备基本的提问技巧.
+> 有关如何提问, 请阅读 [《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
 
 ## 性能
 
-10mb内存占用 端口错开可多开 稳定运行无报错
+约 10MB 内存占用 端口错开可多开 稳定运行无报错
