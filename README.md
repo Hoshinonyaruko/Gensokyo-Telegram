@@ -187,7 +187,7 @@ sendDirectResponse : false
 | [CQ:xml]     | [XML 消息]                  |
 | [CQ:json]    | [JSON 消息]                 |
 
-todo,正在施工中
+> 正在施工中
 
 #### 拓展 CQ 码及与 OneBot 标准有略微差异的 CQ 码
 
