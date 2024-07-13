@@ -71,6 +71,8 @@ gensokyo兼容 [OneBot-v11](https://github.com/botuniverse/onebot-11) ，并在�
 
 持续完善中.....交流群:196173384
 
+交流tg频道: [早苗tg交流](https://t.me/+vby2QSVS5xVhNWE1)
+
 欢迎测试,询问任何有关使用的问题,有问必答,有难必帮~
 
 ## 配置指南
