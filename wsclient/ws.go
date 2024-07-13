@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hoshinonyaruko/gensokyo-telegram/callapi"
 	"github.com/hoshinonyaruko/gensokyo-telegram/config"
+	"github.com/hoshinonyaruko/gensokyo-telegram/echo"
 	"github.com/hoshinonyaruko/gensokyo-telegram/mylog"
 )
 
@@ -62,24 +63,24 @@ func (client *WebSocketClient) SendMessage(message map[string]interface{}) error
 }
 
 // 处理onebotv11应用端发来的信息
-func (client *WebSocketClient) handleIncomingMessages(ctx context.Context, cancel context.CancelFunc) {
+func (client *WebSocketClient) handleIncomingMessages(ctx context.Context, cancel context.CancelFunc, bot *tgbotapi.BotAPI) {
 	for {
 		_, msg, err := client.conn.ReadMessage()
 		if err != nil {
 			mylog.Println("WebSocket connection closed:", err)
 			cancel() // 取消心跳 goroutine
 			if !client.isReconnecting {
-				go client.Reconnect()
+				go client.Reconnect(bot)
 			}
 			return // 退出循环，不再尝试读取消息
 		}
 
-		go client.recvMessage(msg)
+		go client.recvMessage(msg, bot)
 	}
 }
 
 // 断线重连
-func (client *WebSocketClient) Reconnect() {
+func (client *WebSocketClient) Reconnect(bot *tgbotapi.BotAPI) {
 	client.isReconnecting = true
 
 	addresses := config.GetWsAddress()
@@ -169,7 +170,7 @@ func (client *WebSocketClient) Reconnect() {
 	client.cancel = cancel
 	heartbeatinterval := config.GetHeartBeatInterval()
 	go client.sendHeartbeat(ctx, client.botID, heartbeatinterval)
-	go client.handleIncomingMessages(ctx, cancel)
+	go client.handleIncomingMessages(ctx, cancel, bot)
 
 	defer func() {
 		client.isReconnecting = false
@@ -194,7 +195,7 @@ func (client *WebSocketClient) processFailedMessages() {
 
 // 处理信息,调用腾讯api
 // recvMessage 处理接收到的消息
-func (client *WebSocketClient) recvMessage(msg []byte) {
+func (client *WebSocketClient) recvMessage(msg []byte, bot *tgbotapi.BotAPI) {
 	var message callapi.ActionMessage
 	err := json.Unmarshal(msg, &message)
 	if err != nil {
@@ -203,38 +204,77 @@ func (client *WebSocketClient) recvMessage(msg []byte) {
 	}
 	mylog.Println("Received from onebotv11 server:", TruncateMessage(message, 800))
 
-	// 判断Action是否以"send"开头
-	if !strings.HasPrefix(message.Action, "send") {
-		// 如果不是以"send"开头，记录日志并返回
+	// 使用 switch 语句来判断 action 类型
+	switch {
+	case strings.HasPrefix(message.Action, "send"):
+		mapMutex.Lock()
+		defer mapMutex.Unlock()
+
+		// 检查是否启用了双向Echo模式
+		twoWayEchoEnabled := config.GetTwoWayEcho()
+
+		if !twoWayEchoEnabled {
+			// 如果双向Echo未启用，所有消息都发送到通用通道
+			generalChan <- message
+			return // 早期返回，避免执行后续逻辑
+		}
+
+		// 如果双向Echo启用，根据echo的值处理消息
+		echoValue, ok := message.Echo.(string)
+		if !ok {
+			// 如果echo不是字符串，将消息发送到通用通道
+			generalChan <- message
+		} else {
+			if ch, ok := echoToChanMap[echoValue]; ok {
+				// 如果找到匹配的信道，则发送消息
+				ch <- message
+				// 从映射中移除已处理的echo
+				delete(echoToChanMap, echoValue)
+			}
+		}
+	case message.Action == "delete_msg":
+		// 处理删除消息的逻辑
+
+		msgID, err := getMessageID(message.Params.MessageID)
+		if err != nil {
+			log.Printf("Error converting message ID: %v", err)
+			return
+		}
+
+		chatID := echo.GetMappingMsgIDtoChatID(msgID)
+
+		// Create delete message config
+		deleteConfig := tgbotapi.DeleteMessageConfig{
+			ChatID:    chatID,
+			MessageID: msgID,
+		}
+
+		// 执行撤回操作
+		if _, err := bot.Request(deleteConfig); err != nil {
+			log.Printf("Error deleting message: %v", err)
+		} else {
+			log.Printf("Message deleted successfully")
+		}
+	case message.Action == "get_group_list":
+		// 处理获取群组列表的逻辑
+		// TODO: 实现获取群组列表的功能
+		mylog.Printf("Action '%s' is to be implemented.", message.Action)
+	default:
+		// 对不支持的 action 进行日志记录并返回
 		mylog.Printf("Action '%s' is not supported, ignored.", message.Action)
 		client.respondToAction(message.Action, message.Echo)
 		return
 	}
+}
 
-	mapMutex.Lock()
-	defer mapMutex.Unlock()
-
-	// 检查是否启用了双向Echo模式
-	twoWayEchoEnabled := config.GetTwoWayEcho()
-
-	if !twoWayEchoEnabled {
-		// 如果双向Echo未启用，所有消息都发送到通用通道
-		generalChan <- message
-		return // 早期返回，避免执行后续逻辑
-	}
-
-	// 如果双向Echo启用，根据echo的值处理消息
-	echoValue, ok := message.Echo.(string)
-	if !ok {
-		// 如果echo不是字符串，将消息发送到通用通道
-		generalChan <- message
-	} else {
-		if ch, ok := echoToChanMap[echoValue]; ok {
-			// 如果找到匹配的信道，则发送消息
-			ch <- message
-			// 从映射中移除已处理的echo
-			delete(echoToChanMap, echoValue)
-		}
+func getMessageID(input interface{}) (int, error) {
+	switch v := input.(type) {
+	case int:
+		return v, nil
+	case string:
+		return strconv.Atoi(v)
+	default:
+		return 0, fmt.Errorf("unexpected type for MessageID: %T", v)
 	}
 }
 
@@ -375,7 +415,7 @@ func (client *WebSocketClient) sendHeartbeat(ctx context.Context, botID string, 
 }
 
 // NewWebSocketClient 创建 WebSocketClient 实例，接受 WebSocket URL、botID 和 core.Context 指针
-func NewWebSocketClient(urlStr string, botID string, maxRetryAttempts int) (*WebSocketClient, error) {
+func NewWebSocketClient(urlStr string, botID string, maxRetryAttempts int, bot *tgbotapi.BotAPI) (*WebSocketClient, error) {
 	addresses := config.GetWsAddress()
 	tokens := config.GetWsToken()
 
@@ -465,7 +505,7 @@ func NewWebSocketClient(urlStr string, botID string, maxRetryAttempts int) (*Web
 	client.cancel = cancel
 	heartbeatinterval := config.GetHeartBeatInterval()
 	go client.sendHeartbeat(ctx, botID, heartbeatinterval)
-	go client.handleIncomingMessages(ctx, cancel)
+	go client.handleIncomingMessages(ctx, cancel, bot)
 
 	return client, nil
 }

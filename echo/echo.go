@@ -21,6 +21,12 @@ type Int64ToIntMapping struct {
 	mapping map[int64]int
 }
 
+// Int64ToIntMapping 用于存储 int64 到 int 的映射(msgid到chatid)
+type Int64ToIntMappingMsgIDtoChatID struct {
+	mu      sync.Mutex
+	mapping map[int]int64
+}
+
 // IntToStringMappingSeq 用于存储 string 到 int 的映射(seq对应)
 type StringToIntMappingSeq struct {
 	mu      sync.Mutex
@@ -50,6 +56,10 @@ var globalEchoMapping = &EchoMapping{
 }
 var globalInt64ToIntMapping = &Int64ToIntMapping{
 	mapping: make(map[int64]int),
+}
+
+var globalInt64ToIntMappingMsgIDtoChatID = &Int64ToIntMappingMsgIDtoChatID{
+	mapping: make(map[int]int64),
 }
 
 var globalStringToIntMappingSeq = &StringToIntMappingSeq{
@@ -139,6 +149,20 @@ func GetMapping(key int64) int {
 	globalInt64ToIntMapping.mu.Lock()
 	defer globalInt64ToIntMapping.mu.Unlock()
 	return globalInt64ToIntMapping.mapping[key]
+}
+
+// AddMapping 添加一个新的映射
+func AddMappingMsgIDtoChatID(key int, value int64) {
+	globalInt64ToIntMappingMsgIDtoChatID.mu.Lock()
+	defer globalInt64ToIntMappingMsgIDtoChatID.mu.Unlock()
+	globalInt64ToIntMappingMsgIDtoChatID.mapping[key] = value
+}
+
+// GetMapping 根据给定的 int64 键获取映射值
+func GetMappingMsgIDtoChatID(key int) int64 {
+	globalInt64ToIntMappingMsgIDtoChatID.mu.Lock()
+	defer globalInt64ToIntMappingMsgIDtoChatID.mu.Unlock()
+	return globalInt64ToIntMappingMsgIDtoChatID.mapping[key]
 }
 
 // AddMapping 添加一个新的映射
