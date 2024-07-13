@@ -23,8 +23,7 @@ func ProcessGroupMessage(data *tgbotapi.Message, Wsclient []*wsclient.WebSocketC
 
 	// 构造echo
 	echostr := AppIDString + "_" + strconv.Itoa(s)
-	var userid64 int64
-	var GroupID64 int64
+	var userid64, GroupID64 int64
 
 	// 映射str的GroupID到int
 	GroupID64 = data.Chat.ID
@@ -60,17 +59,14 @@ func ProcessGroupMessage(data *tgbotapi.Message, Wsclient []*wsclient.WebSocketC
 		segmentedMessages = handlers.ConvertToSegmentedMessage(messageText)
 	}
 	var IsBindedUserId, IsBindedGroupId bool
-	// if config.GetHashIDValue() {
-	// 	IsBindedUserId = idmap.CheckValue(data.Author.ID, userid64)
-	// 	IsBindedGroupId = idmap.CheckValue(data.GroupID, GroupID64)
-	// } else {
-	// 	IsBindedUserId = idmap.CheckValuev2(userid64)
-	// 	IsBindedGroupId = idmap.CheckValuev2(GroupID64)
-	// }
+
+	// 将chatid和msgid绑定
+	echo.AddMappingMsgIDtoChatID(data.MessageID, GroupID64)
+
 	groupMsg := OnebotGroupMessage{
 		RawMessage:  messageText,
 		Message:     segmentedMessages,
-		MessageID:   123,
+		MessageID:   data.MessageID,
 		GroupID:     GroupID64,
 		MessageType: "group",
 		PostType:    "message",

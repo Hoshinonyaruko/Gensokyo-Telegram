@@ -65,18 +65,19 @@ func (a *ActionMessage) UnmarshalJSON(data []byte) error {
 
 // params类型
 type ParamsContent struct {
-	BotQQ     string      `json:"botqq"`
-	ChannelID string      `json:"channel_id"`
-	GuildID   string      `json:"guild_id"`
-	GroupID   interface{} `json:"group_id"`           // 每一种onebotv11实现的字段类型都可能不同
-	Message   interface{} `json:"message"`            // 这里使用interface{}因为它可能是多种类型
-	Messages  interface{} `json:"messages,omitempty"` // 坑爹转发信息
-	UserID    interface{} `json:"user_id"`            // 这里使用interface{}因为它可能是多种类型
-	Duration  int         `json:"duration,omitempty"` // 可选的整数
-	Enable    bool        `json:"enable,omitempty"`   // 可选的布尔值
+	BotQQ     string      `json:"botqq,omitempty"`
+	ChannelID interface{} `json:"channel_id,omitempty"`
+	GuildID   interface{} `json:"guild_id,omitempty"`
+	GroupID   interface{} `json:"group_id,omitempty"`   // 每一种onebotv11实现的字段类型都可能不同
+	MessageID interface{} `json:"message_id,omitempty"` // 用于撤回信息
+	Message   interface{} `json:"message,omitempty"`    // 这里使用interface{}因为它可能是多种类型
+	Messages  interface{} `json:"messages,omitempty"`   // 坑爹转发信息
+	UserID    interface{} `json:"user_id,omitempty"`    // 这里使用interface{}因为它可能是多种类型
+	Duration  int         `json:"duration,omitempty"`   // 可选的整数
+	Enable    bool        `json:"enable,omitempty"`     // 可选的布尔值
 	// handle quick operation
-	Context   Context   `json:"context"`   // context 字段
-	Operation Operation `json:"operation"` // operation 字段
+	Context   Context   `json:"context,omitempty"`   // context 字段
+	Operation Operation `json:"operation,omitempty"` // operation 字段
 }
 
 // Context 结构体用于存储 context 字段相关信息

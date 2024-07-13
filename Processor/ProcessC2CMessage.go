@@ -31,10 +31,9 @@ func ProcessC2CMessage(data *tgbotapi.Message, Wsclient []*wsclient.WebSocketCli
 
 	AppIDString := config.GetBotID()
 	echostr := AppIDString + "_" + strconv.Itoa(s)
-	var userid64 int64
 
 	//将真实id转为int userid64
-	userid64 = data.From.ID
+	userid64 := data.From.ID
 
 	selfid := config.ExtractAndTruncateDigits(AppIDString)
 
@@ -65,15 +64,14 @@ func ProcessC2CMessage(data *tgbotapi.Message, Wsclient []*wsclient.WebSocketCli
 		segmentedMessages = handlers.ConvertToSegmentedMessage(messageText)
 	}
 	var IsBindedUserId bool
-	// if config.GetHashIDValue() {
-	// 	IsBindedUserId = idmap.CheckValue(data.Author.ID, userid64)
-	// } else {
-	// 	IsBindedUserId = idmap.CheckValuev2(userid64)
-	// }
+
+	// 将chatid和msgid绑定
+	echo.AddMappingMsgIDtoChatID(data.MessageID, userid64)
+
 	privateMsg := OnebotPrivateMessage{
 		RawMessage:  messageText,
 		Message:     segmentedMessages,
-		MessageID:   123,
+		MessageID:   data.MessageID,
 		MessageType: "private",
 		PostType:    "message",
 		SelfID:      id64,

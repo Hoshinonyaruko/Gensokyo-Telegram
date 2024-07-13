@@ -321,7 +321,7 @@ func main() {
 			go func(address string) {
 				retry := config.GetLaunchReconectTimes()
 
-				wsClient, err := wsclient.NewWebSocketClient(address, botIdStr, retry)
+				wsClient, err := wsclient.NewWebSocketClient(address, botIdStr, retry, bot)
 				if err != nil {
 					log.Printf("Error creating WebSocketClient for address(连接到反向ws失败) %s: %v\n", address, err)
 					errorChan <- err
